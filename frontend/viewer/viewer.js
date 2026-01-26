@@ -9,7 +9,23 @@ const img = new Image();
 img.src = "room.jpeg";
 
 img.onload = () => {
-    context.drawImage(img, 0, 0, canvas.width, canvas.height);
+    let sx, sy, sw, sh;
+    const imgRatio = img.width / img.height;
+    const canRatio = canvas.width / canvas.height;
+    if (imgRatio > canRatio) {
+        // Image is wider than canvas
+        sw = img.height * canRatio;
+        sh = img.height;
+        sx = (img.width - sw) / 2;
+        sy = 0;
+    } else {
+        // Image is taller than canvas
+        sw = img.width;
+        sh = img.width / canRatio;
+        sx = 0;
+        sy = (img.height - sh) / 2;
+    }
+    context.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 };
 
 img.onerror = () => {

@@ -1,0 +1,37 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#view {
+  aspect-ratio: 16 / 9;
+  width: min(100vw, calc(100vh * 16 / 9));
+  height: auto;
+  display: block;
+}
+
+#debugCam {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 260px;
+  padding: 0px;
+  background: rgba(0, 0, 0);
+  color: white;
+  border-radius: 12px;
+}
+
+#debugCam video {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}

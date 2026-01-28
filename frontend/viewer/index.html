@@ -11,13 +11,16 @@
     <!-- <h1>Portico</h1> -->
 
     <div id="debugCam">
-        <p>Webcam preview:</p>
+        <p>Debug</p>
         <button id="startButton">Start</button>
-        <video id="cam" width="1920" height="1080" autoplay playsinline muted></video>
+        <div id="camWrap">
+            <video id="cam" autoplay playsinline muted></video>
+            <canvas id="debugOverlay"></canvas>
+        </div>
     </div>
 
     <canvas id="view" width="1920" height="1080"></canvas>
 
-    <script src="viewer.js"></script>
+    <script type="module" src="viewer.js"></script>
 </body>
 </html>

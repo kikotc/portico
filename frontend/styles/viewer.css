@@ -9,7 +9,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 /*
@@ -30,15 +30,23 @@ h1 {
   right: 16px;
   bottom: 16px;
   width: 260px;
-  padding: 0px;
-  background: rgba(0, 0, 0);
-  color: white;
-  border-radius: 12px;
+  padding: 10px;
+  background: #000;
+  color: #fff;
+  border-radius: 8px;
 }
+
+#camWrap { position: relative; }
 
 #debugCam video {
   width: 100%;
-  height: auto;
   display: block;
   border-radius: 8px;
+  transform: scaleX(-1);
+}
+
+#debugOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }

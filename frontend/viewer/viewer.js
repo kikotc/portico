@@ -7,28 +7,33 @@ const startButton = document.getElementById("startButton");
 const cam = document.getElementById("cam");
 const canvas = document.getElementById("view");
 const context = canvas.getContext("2d");
+const overlay = document.getElementById("debugOverlay");
+const octx = overlay.getContext("2d");
+octx.fillStyle = "lime";
 
 const img = new Image();
 img.src = "room.jpeg";
 
 let faceLandmarker = null;
+let running = false;
+let lastResult = null;
 
 async function initFaceLandmarker() {
-  const fileset = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
-  );
+    const fileset = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+    );
 
-  faceLandmarker = await FaceLandmarker.createFromOptions(fileset, {
-    baseOptions: {
-      modelAssetPath:
-        "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-      delegate: "GPU",
-    },
-    runningMode: "VIDEO",
-    numFaces: 1,
-  });
+    faceLandmarker = await FaceLandmarker.createFromOptions(fileset, {
+        baseOptions: {
+            modelAssetPath:
+                "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+            delegate: "GPU",
+        },
+        runningMode: "VIDEO",
+        numFaces: 1,
+    });
 
-  console.log("FaceLandmarker ready");
+    console.log("FaceLandmarker ready");
 }
 
 initFaceLandmarker();
@@ -67,6 +72,47 @@ function render(u = 0.5, v = 0.5, zoom = 1.0) {
     context.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 }
 
+function resizeOverlayToVideo() {
+    const w = cam.clientWidth;
+    const h = cam.clientHeight;
+
+    overlay.width = w;
+    overlay.height = h;
+}
+
+function drawLandmarks(landmarks) {
+    const w = overlay.width;
+    const h = overlay.height;
+
+    octx.clearRect(0, 0, w, h);
+
+    for (const p of landmarks) {
+        let x = p.x * w;
+        const y = p.y * h;
+
+        x = (1 - p.x) * w;
+
+        octx.beginPath();
+        octx.arc(x, y, 2, 0, Math.PI * 2);
+        octx.fill();
+    }
+}
+
+function detectionLoop() {
+    console.log("tick");
+    if (!running) return;
+
+    if (faceLandmarker) {
+        const t = performance.now();
+        lastResult = faceLandmarker.detectForVideo(cam, t);
+        const landmarks = lastResult.faceLandmarks?.[0];
+        if (landmarks) drawLandmarks(landmarks);
+        else octx.clearRect(0, 0, overlay.width, overlay.height);
+    }
+
+    requestAnimationFrame(detectionLoop);
+}
+
 img.onload = () => {
     render(0.5, 0.5, 1.0);
 };
@@ -81,6 +127,8 @@ startButton.addEventListener("click", async () => {
     console.log("Start clicked");
 
     if (stream) {
+        running = false;
+        octx.clearRect(0, 0, overlay.width, overlay.height);
         for (const track of stream.getTracks()) {
             track.stop();
         }
@@ -94,7 +142,13 @@ startButton.addEventListener("click", async () => {
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         cam.srcObject = stream;
         await cam.play();
+        console.log("video size", cam.clientWidth, cam.clientHeight, cam.videoWidth, cam.videoHeight);
         startButton.textContent = "Stop";
+        resizeOverlayToVideo();
+        console.log("client", cam.clientWidth, cam.clientHeight, "overlay", overlay.width, overlay.height);
+        console.log("video", cam.videoWidth, cam.videoHeight);
+        running = true;
+        requestAnimationFrame(detectionLoop);
     } catch (err) {
         console.error(err);
         alert("Could not access the webcam. Please check permissions.");

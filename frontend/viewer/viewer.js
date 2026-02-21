@@ -1,8 +1,10 @@
 import vision from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
+// FilesetResolver needed to load WebAssembly (WASM) files used to run facial detection
 const { FaceLandmarker, FilesetResolver } = vision;
 
 console.log("viewer.js loaded");
 
+// load elements
 const startButton = document.getElementById("startButton");
 const cam = document.getElementById("cam");
 const canvas = document.getElementById("view");
@@ -11,6 +13,7 @@ const overlay = document.getElementById("debugOverlay");
 const octx = overlay.getContext("2d");
 octx.fillStyle = "lime";
 
+// load test image
 const img = new Image();
 img.src = "room.jpeg";
 
@@ -18,6 +21,7 @@ let faceLandmarker = null;
 let running = false;
 let lastResult = null;
 
+// initialize the FaceLandmarker
 async function initFaceLandmarker() {
     const fileset = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
@@ -93,7 +97,7 @@ function drawLandmarks(landmarks) {
         x = (1 - p.x) * w;
 
         octx.beginPath();
-        octx.arc(x, y, 2, 0, Math.PI * 2);
+        octx.arc(x, y, 1, 0, Math.PI * 2);
         octx.fill();
     }
 }

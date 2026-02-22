@@ -114,8 +114,21 @@ function detectionLoop() {
         const t = performance.now();
         lastResult = faceLandmarker.detectForVideo(cam, t);
         const landmarks = lastResult.faceLandmarks?.[0];
-        if (landmarks) drawLandmarks(landmarks);
-        else octx.clearRect(0, 0, overlay.width, overlay.height);
+        if (landmarks) {
+            drawLandmarks(landmarks);
+            let avgU = 0;
+            let avgV = 0;
+            for (const p of landmarks) {
+                avgU += p.x;
+                avgV += p.y;
+            }
+            avgU /= landmarks.length;
+            avgV /= landmarks.length;
+            
+            render(avgU, avgV, 1.5);
+        } else {
+            octx.clearRect(0, 0, overlay.width, overlay.height);
+        }
     }
 
     // schedule detection for the next frame

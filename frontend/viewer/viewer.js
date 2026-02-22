@@ -20,6 +20,7 @@ img.src = "room.jpeg";
 let faceLandmarker = null;
 let running = false;
 let lastResult = null;
+let stream = null;
 
 // initialize the FaceLandmarker
 async function initFaceLandmarker() {
@@ -76,6 +77,7 @@ function render(u = 0.5, v = 0.5, zoom = 1.0) {
     context.drawImage(img, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 }
 
+// resize face dot overlay in debug menu
 function resizeOverlayToVideo() {
     const w = cam.clientWidth;
     const h = cam.clientHeight;
@@ -84,6 +86,7 @@ function resizeOverlayToVideo() {
     overlay.height = h;
 }
 
+// draw dots on face in debug menu
 function drawLandmarks(landmarks) {
     const w = overlay.width;
     const h = overlay.height;
@@ -102,6 +105,7 @@ function drawLandmarks(landmarks) {
     }
 }
 
+// run the detection every frame
 function detectionLoop() {
     console.log("tick");
     if (!running) return;
@@ -114,6 +118,7 @@ function detectionLoop() {
         else octx.clearRect(0, 0, overlay.width, overlay.height);
     }
 
+    // schedule detection for the next frame
     requestAnimationFrame(detectionLoop);
 }
 
@@ -124,8 +129,6 @@ img.onload = () => {
 img.onerror = () => {
     console.error("Failed to load image");
 };
-
-let stream = null;
 
 startButton.addEventListener("click", async () => {
     console.log("Start clicked");
@@ -146,11 +149,8 @@ startButton.addEventListener("click", async () => {
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
         cam.srcObject = stream;
         await cam.play();
-        console.log("video size", cam.clientWidth, cam.clientHeight, cam.videoWidth, cam.videoHeight);
         startButton.textContent = "Stop";
         resizeOverlayToVideo();
-        console.log("client", cam.clientWidth, cam.clientHeight, "overlay", overlay.width, overlay.height);
-        console.log("video", cam.videoWidth, cam.videoHeight);
         running = true;
         requestAnimationFrame(detectionLoop);
     } catch (err) {
